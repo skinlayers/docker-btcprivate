@@ -20,16 +20,6 @@ RUN curl -L "$SPROUT_VKEY_URL" -o "$SPROUT_VKEY_NAME" && \
         > "$SPROUT_VKEY_SHA256_FILE" && \
     sha256sum -c "$SPROUT_VKEY_SHA256_FILE"
 
-ARG CONFD_VERSION=0.15.0
-ARG CONFD_BIN=confd-$CONFD_VERSION-linux-amd64
-ARG CONFD_BIN_URL=https://github.com/kelseyhightower/confd/releases/download/v$CONFD_VERSION/$CONFD_BIN
-ARG CONFD_SHA256=7f3aba1d803543dd1df3944d014f055112cf8dadf0a583c76dd5f46578ebe3c2
-ARG CONFD_SHA256_FILE=confd-$CONFD_VERSION-linux-amd64-sha256.txt
-RUN curl -L "$CONFD_BIN_URL" -o confd && \
-    echo "$CONFD_SHA256  confd" > "$CONFD_SHA256_FILE" && \
-    sha256sum -c "$CONFD_SHA256_FILE" && \
-    chmod +x confd
-
 ARG BTCP_GIT_URL=https://github.com/BTCPrivate/BitcoinPrivate.git
 ARG BTCP_GIT_BRANCH=master
 ARG BTCP_GIT_COMMIT=bb74d8f273596f89df79044c0867e0902d8981e7
@@ -62,11 +52,6 @@ RUN apt-get update && \
 FROM debian:stretch
 LABEL maintainer="skinlayers@gmail.com"
 
-ENV RPC_USER btcprivaterpc
-ENV RPC_PASSWORD override_me
-ENV RPC_ALLOWIP_HOST00 127.0.0.1
-ENV ADDNODE_HOST00 dnsseed.btcprivate.org
-
 ARG BTCP_BUILDER_PATH=/BitcoinPrivate/src
 ARG RUNTIME_DEPENDENCIES=" \
     libgomp1 \
@@ -83,11 +68,9 @@ RUN set -eu && \
 
 COPY --from=btcp-builder /sprout-proving.key /
 COPY --from=btcp-builder /sprout-verifying.key /
-COPY --from=btcp-builder /confd /usr/local/bin
 COPY --from=btcp-builder $BTCP_BUILDER_PATH/btcp-cli /usr/local/bin
 COPY --from=btcp-builder $BTCP_BUILDER_PATH/btcpd /usr/local/bin
 
-COPY ./confd /etc/confd
 COPY ./docker-entrypoint.sh /
 
 RUN chmod +x /docker-entrypoint.sh
@@ -98,7 +81,8 @@ WORKDIR /data
 RUN mkdir -m 0700 /data/.zcash-params && \
     ln -s /sprout-proving.key /data/.zcash-params/sprout-proving.key && \
     ln -s /sprout-verifying.key /data/.zcash-params/sprout-verifying.key && \
-    mkdir -m 0700 /data/.btcprivate
+    mkdir -m 0700 /data/.btcprivate && \
+    touch /data/.btcprivate/btcprivate.conf
 
 VOLUME ["/data"]
 
