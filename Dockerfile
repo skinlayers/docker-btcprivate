@@ -52,37 +52,35 @@ RUN apt-get update && \
 FROM debian:stretch
 LABEL maintainer="skinlayers@gmail.com"
 
-ARG BTCP_BUILDER_PATH=/BitcoinPrivate/src
 ARG RUNTIME_DEPENDENCIES=" \
     libgomp1 \
     libzmq5 \
 "
 
+COPY --from=btcp-builder /sprout-proving.key /
+COPY --from=btcp-builder /sprout-verifying.key /
+COPY ./docker-entrypoint.sh /
+
+ARG BTCP_BUILDER_PATH=/BitcoinPrivate/src
+COPY --from=btcp-builder $BTCP_BUILDER_PATH/btcp-cli /usr/local/bin
+COPY --from=btcp-builder $BTCP_BUILDER_PATH/btcpd /usr/local/bin
+
 RUN set -eu && \
     adduser --system -u 400 --group --home /data btcprivate && \
-    mkdir /etc/confd && \
+    chmod +x /docker-entrypoint.sh && \
     apt-get update && \
     apt-get -y install $RUNTIME_DEPENDENCIES && \
     rm -r /var/lib/apt/lists/*
 
-
-COPY --from=btcp-builder /sprout-proving.key /
-COPY --from=btcp-builder /sprout-verifying.key /
-COPY --from=btcp-builder $BTCP_BUILDER_PATH/btcp-cli /usr/local/bin
-COPY --from=btcp-builder $BTCP_BUILDER_PATH/btcpd /usr/local/bin
-
-COPY ./docker-entrypoint.sh /
-
-RUN chmod +x /docker-entrypoint.sh
-
 USER btcprivate
 
 WORKDIR /data
-RUN mkdir -m 0700 /data/.zcash-params && \
-    ln -s /sprout-proving.key /data/.zcash-params/sprout-proving.key && \
-    ln -s /sprout-verifying.key /data/.zcash-params/sprout-verifying.key && \
-    mkdir -m 0700 /data/.btcprivate && \
-    touch /data/.btcprivate/btcprivate.conf
+
+RUN mkdir -m 0700 .zcash-params && \
+    ln -s /sprout-proving.key .zcash-params/sprout-proving.key && \
+    ln -s /sprout-verifying.key .zcash-params/sprout-verifying.key && \
+    mkdir -m 0700 .btcprivate && \
+    touch .btcprivate/btcprivate.conf
 
 VOLUME ["/data"]
 
