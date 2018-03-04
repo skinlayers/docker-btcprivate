@@ -1,0 +1,9 @@
+[template]
+src = "btcprivate.conf.tmpl"
+dest = "/data/.btcprivate/btcprivate.conf"
+owner = "btcprivate"
+mode = "0600"
+keys = [
+    "/rpc",
+    "/addnode",
+]
