@@ -20,9 +20,6 @@ RUN curl -L "$SPROUT_VKEY_URL" -o "$SPROUT_VKEY_NAME" && \
         > "$SPROUT_VKEY_SHA256_FILE" && \
     sha256sum -c "$SPROUT_VKEY_SHA256_FILE"
 
-ARG BTCP_GIT_URL=https://github.com/BTCPrivate/BitcoinPrivate.git
-ARG BTCP_GIT_BRANCH=master
-ARG BTCP_GIT_COMMIT=4045199486c8182500572447b659209b5d274994
 ARG BUILD_DEPENDENCIES=" \
         autoconf \
         automake \
@@ -42,10 +39,15 @@ ARG BUILD_DEPENDENCIES=" \
 "
 
 RUN apt-get update && \
-    apt-get -y install $BUILD_DEPENDENCIES && \
-    git clone -b "$BTCP_GIT_BRANCH" --single-branch "$BTCP_GIT_URL" && \
+    apt-get -y install $BUILD_DEPENDENCIES
+
+ARG GIT_URL=https://github.com/BTCPrivate/BitcoinPrivate.git
+ARG GIT_BRANCH=master
+ARG GIT_COMMIT=4045199486c8182500572447b659209b5d274994
+
+RUN git clone -b "$GIT_BRANCH" --single-branch "$GIT_URL" && \
     cd BitcoinPrivate && \
-    git reset --hard "$BTCP_GIT_COMMIT" && \
+    git reset --hard "$GIT_COMMIT" && \
     ./btcputil/build.sh -j$(nproc)
 
 
@@ -61,9 +63,9 @@ COPY --from=btcp-builder /sprout-proving.key /
 COPY --from=btcp-builder /sprout-verifying.key /
 COPY ./docker-entrypoint.sh /
 
-ARG BTCP_BUILDER_PATH=/BitcoinPrivate/src
-COPY --from=btcp-builder $BTCP_BUILDER_PATH/btcp-cli /usr/local/bin
-COPY --from=btcp-builder $BTCP_BUILDER_PATH/btcpd /usr/local/bin
+ARG BUILDER_PATH=/BitcoinPrivate/src
+COPY --from=btcp-builder $BUILDER_PATH/btcp-cli /usr/local/bin
+COPY --from=btcp-builder $BUILDER_PATH/btcpd /usr/local/bin
 
 RUN set -eu && \
     adduser --system -u 400 --group --home /data btcprivate && \
