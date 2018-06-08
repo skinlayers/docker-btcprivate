@@ -73,7 +73,7 @@ RUN set -eu && \
     apt-get -y install $RUNTIME_DEPENDENCIES && \
     rm -r /var/lib/apt/lists/*
 
-COPY --from btcp-builder /BitcoinPrivate/contrib/debian/examples/btcprivate.conf /data/.btcprivate
+COPY --from=btcp-builder /BitcoinPrivate/contrib/debian/examples/btcprivate.conf /data/.btcprivate
 
 RUN chmod 0600 /data/.btcprivate/btcprivate.conf && \
     chown -R btcprivate:btcprivate /data/.btcprivate
