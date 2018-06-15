@@ -2,7 +2,7 @@
 
 ## Build
 ```
-docker build -t BitcoinPrivate:1.0.12-1 .
+docker build -t BitcoinPrivate:latest .
 ```
 
 ## Run
@@ -15,7 +15,7 @@ docker run \
     -v BitcoinPrivate-data:/data \
     -p 7932:7932 \
     -p 7933:7933 \
-    BitcoinPrivate:1.0.12-1 \
+    BitcoinPrivate:latest \
     -printtoconsole \
     -upnp \
     -addnode=dnsseed.btcprivate.org
