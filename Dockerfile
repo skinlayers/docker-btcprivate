@@ -23,12 +23,9 @@ RUN apt-get update && \
     apt-get -y install $BUILD_DEPENDENCIES
 
 ARG GIT_URL=https://github.com/BTCPrivate/BitcoinPrivate.git
-ARG GIT_BRANCH=master
-ARG GIT_COMMIT=4045199486c8182500572447b659209b5d274994
 
-RUN git clone -b "$GIT_BRANCH" --single-branch "$GIT_URL" && \
+RUN git clone -b master --single-branch "$GIT_URL" && \
     cd BitcoinPrivate && \
-    git reset --hard "$GIT_COMMIT" && \
     ./btcputil/build.sh -j$(nproc)
 
 
