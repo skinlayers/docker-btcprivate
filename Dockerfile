@@ -1,4 +1,4 @@
-FROM skinlayers/docker-zcash-sprout-keys as btcp-builder
+FROM buildpack-deps:bionic as btcp-builder
 LABEL maintainer="skinlayers@gmail.com"
 
 ARG BUILD_DEPENDENCIES=" \
@@ -32,7 +32,7 @@ RUN git clone -b "$GIT_BRANCH" --single-branch "$GIT_URL" && \
     ./btcputil/build.sh -j$(nproc)
 
 
-FROM debian:stretch
+FROM ubuntu:bionic
 LABEL maintainer="skinlayers@gmail.com"
 
 ARG RUNTIME_DEPENDENCIES=" \
@@ -40,8 +40,8 @@ ARG RUNTIME_DEPENDENCIES=" \
         libzmq5 \
 "
 
-COPY --from=btcp-builder /sprout-proving.key /
-COPY --from=btcp-builder /sprout-verifying.key /
+COPY --from=skinlayers/docker-zcash-sprout-keys /sprout-proving.key /
+COPY --from=skinlayers/docker-zcash-sprout-keys /sprout-verifying.key /
 COPY ./docker-entrypoint.sh /
 
 ARG BUILDER_PATH=/BitcoinPrivate/src
